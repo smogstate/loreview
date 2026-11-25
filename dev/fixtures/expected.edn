@@ -1,0 +1,54 @@
+;; What Loregate returns for the fixture tiles, per user — checked by
+;; test/loreview/expected_test.clj against the real Loregate (its fixtures in ../loregate).
+;; Worked out by hand from Loregate's data.edn first (2026-11-24), when Loregate could not
+;; yet run; it has agreed with every Loregate commit since. Clock 2026-11-24, min-days 30:
+;; - ana  (finance, crm-admin): every client, amounts visible
+;; - bob  (no roles, US):       US clients only — other invoices keep their rows but lose the
+;;                              linked client (an empty name); amounts hidden, so every total
+;;                              is empty and the order is arbitrary
+;; Invoice i12 has a client nobody has: an empty name for everyone.
+;; n counts every invoice past min-days, paid ones too: the measure filters to unpaid, the
+;; local count does not.
+;; :filter — the client-invoices tile is run once per client, with that client as :client.
+[{:tile :tile/unpaid-invoices
+  :output [{:name :biz/client-name :type :string :owned? true}
+           {:name :biz/unpaid-total :type :decimal :unit :currency/eur :owned? true}
+           {:name :n :type :int :owned? false}]
+  :users
+  {"ana" {:rows [{:biz/client-name "Umbrella" :biz/unpaid-total 7200.00M :n 1}
+                 {:biz/client-name "ACME"     :biz/unpaid-total 4200.00M :n 3}
+                 {:biz/client-name nil        :biz/unpaid-total 999.00M  :n 1}
+                 {:biz/client-name "Initech"  :biz/unpaid-total 600.00M  :n 2}
+                 {:biz/client-name "Globex"   :biz/unpaid-total 450.00M  :n 2}]
+          :notes {:as-of {:inv #inst "2026-11-24T09:00:00Z" :cl #inst "2026-11-24T09:00:00Z"}
+                  :rows-filtered #{:biz/client}}}
+   "bob" {:rows [{:biz/client-name nil       :biz/unpaid-total nil :n 5}
+                 {:biz/client-name "Globex"  :biz/unpaid-total nil :n 2}
+                 {:biz/client-name "Initech" :biz/unpaid-total nil :n 2}]
+          :notes {:as-of {:inv #inst "2026-11-24T09:00:00Z" :cl #inst "2026-11-24T09:00:00Z"}
+                  :hidden #{:biz/amount}
+                  :rows-filtered #{:biz/client}}}}}
+
+ {:tile :tile/client-invoices
+  :filter {:param :client :column :biz/client-name}
+  :output [{:name :biz/client-name :type :string :owned? true}
+           {:name :biz/invoice-id :type :string :owned? true}
+           {:name :biz/due-date :type :date :owned? true}
+           {:name :biz/days-overdue :type :int :owned? true}
+           {:name :biz/amount :type :decimal :unit :currency/eur :owned? true}]
+  :users
+  {"ana" {:rows [{:biz/client-name "Umbrella" :biz/invoice-id "i09" :biz/due-date "2026-05-05" :biz/days-overdue 203 :biz/amount 7200.00M}
+                 {:biz/client-name "Globex"   :biz/invoice-id "i04" :biz/due-date "2026-07-20" :biz/days-overdue 127 :biz/amount 450.00M}
+                 {:biz/client-name "ACME"     :biz/invoice-id "i01" :biz/due-date "2026-08-01" :biz/days-overdue 115 :biz/amount 1200.00M}
+                 {:biz/client-name "Initech"  :biz/invoice-id "i07" :biz/due-date "2026-09-01" :biz/days-overdue 84  :biz/amount 300.00M}
+                 {:biz/client-name "Initech"  :biz/invoice-id "i08" :biz/due-date "2026-09-01" :biz/days-overdue 84  :biz/amount 300.00M}
+                 {:biz/client-name "ACME"     :biz/invoice-id "i03" :biz/due-date "2026-10-01" :biz/days-overdue 54  :biz/amount 3000.00M}
+                 {:biz/client-name "Hooli"    :biz/invoice-id "i11" :biz/due-date "2026-10-31" :biz/days-overdue 24  :biz/amount 650.00M}
+                 {:biz/client-name "Globex"   :biz/invoice-id "i05" :biz/due-date "2026-11-30" :biz/days-overdue -6  :biz/amount 990.99M}]
+          :notes {:rows-filtered #{:biz/client}}}
+   "bob" {:rows [{:biz/client-name "Globex"   :biz/invoice-id "i04" :biz/due-date "2026-07-20" :biz/days-overdue 127 :biz/amount nil}
+                 {:biz/client-name "Initech"  :biz/invoice-id "i07" :biz/due-date "2026-09-01" :biz/days-overdue 84  :biz/amount nil}
+                 {:biz/client-name "Initech"  :biz/invoice-id "i08" :biz/due-date "2026-09-01" :biz/days-overdue 84  :biz/amount nil}
+                 {:biz/client-name "Hooli"    :biz/invoice-id "i11" :biz/due-date "2026-10-31" :biz/days-overdue 24  :biz/amount nil}
+                 {:biz/client-name "Globex"   :biz/invoice-id "i05" :biz/due-date "2026-11-30" :biz/days-overdue -6  :biz/amount nil}]
+          :notes {:hidden #{:biz/amount} :rows-filtered #{:biz/client}}}}}]

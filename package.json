@@ -1,0 +1,21 @@
+{
+  "name": "loreview",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "watch": "shadow-cljs watch app",
+    "build": "shadow-cljs release app"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vega": "6.4.0",
+    "vega-lite": "6.5.0",
+    "vega-embed": "7.3.0"
+  },
+  "devDependencies": {
+    "puppeteer-core": "25.18.1",
+    "shadow-cljs": "3.5.14"
+  }
+}

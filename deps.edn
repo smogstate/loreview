@@ -1,0 +1,17 @@
+{:paths ["src"]
+ :deps  {org.clojure/clojure {:mvn/version "1.12.4"}
+         metosin/malli       {:mvn/version "0.20.3"}
+         ;; the query, plan and result schemas come from Loregate itself, never a copy.
+         ;; Pinned to a pushed commit; to work against a local checkout instead:
+         ;; clojure -Sdeps '{:deps {io.github.smogstate/loregate {:local/root "../loregate"}}}' …
+         io.github.smogstate/loregate {:git/url "https://github.com/smogstate/loregate.git"
+                                       :git/sha "30d07be376f529b3fce3c700ecb25a6f4f215564"}}
+ :aliases
+ {;; development server: clojure -M:dev [port]
+  :dev  {:extra-paths ["dev"]
+         :jvm-opts    ["--enable-native-access=ALL-UNNAMED"]
+         :main-opts   ["-m" "loreview.dev"]}
+  :test {:extra-paths ["test" "dev"]
+         :extra-deps  {org.clojure/test.check {:mvn/version "1.1.3"}}
+         :jvm-opts    ["--enable-native-access=ALL-UNNAMED"]
+         :main-opts   ["-m" "loreview.test-runner"]}}}

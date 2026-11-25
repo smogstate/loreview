@@ -1,0 +1,33 @@
+;; Fixture tiles. Names come from Loregate's fixture ontology (../loregate/dev/fixtures/ontology.edn).
+[{:tile/id    :tile/unpaid-invoices
+  :tile/title "Unpaid invoices over 30 days by client"
+  :tile/query {:from   :biz/invoice
+               :select [[:biz.invoice/client :biz/client-name] :biz/unpaid-total :n]
+               :let    {:n [:count]}
+               :where  [:> :biz/days-overdue [:param :min-days]]
+               :sort   [[:biz/unpaid-total :desc]]
+               :limit  50
+               :params {:min-days {:type :int :default 30 :min 0}}}
+  :tile/view  {:type :bar :x :biz/client-name :y :biz/unpaid-total}
+  :tile/events {:emits   [{:event :client-selected :column :biz/client-name}]
+                :listens [{:event :days-selected :param :min-days}]}
+  :tile/expectations
+  [{:desc "ACME is near the top" :check [:top-n-contains 5 :biz/client-name "ACME"]}
+   {:desc "Never empty"          :check [:not-empty]}]}
+
+ {:tile/id    :tile/client-invoices
+  :tile/title "Unpaid invoices of a client"
+  :tile/query {:from   :biz/invoice
+               :select [[:biz.invoice/client :biz/client-name] :biz/invoice-id :biz/due-date
+                        :biz/days-overdue :biz/amount]
+               :where  [:and [:= [:biz.invoice/client :biz/client-name] [:param :client]]
+                             [:= :biz/invoice-status :biz.status/unpaid]]
+               :sort   [[:biz/due-date :asc]]
+               :params {:client {:type :string :default "ACME"}}}
+  :tile/view  {:type :table :columns [:biz/invoice-id :biz/due-date :biz/days-overdue :biz/amount]}
+  :tile/events {:listens [{:event :client-selected :param :client}]}}
+
+ {:tile/id    :tile/contract-total
+  :tile/title "Total contract value"
+  :tile/query {:from :biz/contract :select [:biz/contract-total]}
+  :tile/view  {:type :kpi :value :biz/contract-total}}]

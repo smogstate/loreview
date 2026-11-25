@@ -19,3 +19,4 @@ public/js/
 .idea/
 .vscode/
 .DS_Store
+out/
